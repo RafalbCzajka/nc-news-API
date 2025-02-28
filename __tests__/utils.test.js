@@ -1,5 +1,6 @@
 const {
-  convertTimestampToDate
+  convertTimestampToDate,
+  createRef
 } = require("../db/seeds/utils");
 
 describe("convertTimestampToDate", () => {
@@ -38,3 +39,35 @@ describe("convertTimestampToDate", () => {
   });
 });
 
+describe("createRef", () => {
+  it("Returns an object", () => {
+      const inputArray = [{ name: "Rose", id: "dS8rJns", secretFear: "spiders" }];
+      const result = createRef(inputArray, "name", "id");
+      expect(typeof result).toBe("object");
+  });
+  it("Returns an object mapping the values of passed properties from an array with 1 object entry", () => {
+      const inputArray = [{ name: "Rose", id: "dS8rJns", secretFear: "spiders" }];
+      const expected = { Rose: "dS8rJns"};
+      const result = createRef(inputArray, "name", "id");
+      expect(result).toEqual(expected);
+  });
+  it("Returns an object mapping the values of passed properties from an array with many objects", () => {
+      const inputArray = [
+          { name: "Rose", id: "dS8rJns", secretFear: "spiders" },
+          { name: "Simon", id: "Pk34ABs", secretFear: "mice" },
+          { name: "Jim", id: "lk1ff8s", secretFear: "bears" },
+          { name: "David", id: "og8r0nV", secretFear: "Rose" },
+        ];
+      const expected = { Rose: "spiders", Simon: "mice", Jim: "bears", David: "Rose" };
+      const result = createRef(inputArray, "name", "secretFear");
+      expect(result).toEqual(expected);
+  });
+  describe("Purity tests", () => {
+    it("Function does not mutate original input", () => {
+        const inputArray = [{ name: "Rose", id: "dS8rJns", secretFear: "spiders" }];
+        const originalInput = [{ name: "Rose", id: "dS8rJns", secretFear: "spiders" }];
+        createRef(inputArray, "id", "secretFear");
+        expect(inputArray).toEqual(originalInput);
+    })
+  })
+});
