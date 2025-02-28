@@ -28,6 +28,9 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
   .then(() => {
     return insertTopicsData(topicData);
   })
+  .then(() => {
+    return insertUsersData(userData);
+  })
 };
 
 const createTopicsTable = () => {
@@ -50,7 +53,7 @@ const insertTopicsData = (topicsArray) => {
     RETURNING *
     `, formattedTopics);
 
-    return db.query(sqlString);
+  return db.query(sqlString);
 }
 
 const createUsersTable = () => {
@@ -60,6 +63,21 @@ const createUsersTable = () => {
     avatar_url VARCHAR(1000) NOT NULL
     )`);
 };
+
+const insertUsersData = (usersArray) => {
+  const formattedUsers = usersArray.map((user) => {
+    return [user.username, user.name, user.avatar_url]
+  });
+
+  const sqlString = format(`INSERT INTO users
+    (username, name, avatar_url)
+    VALUES
+    %L
+    RETURNING *
+    `, formattedUsers);
+
+  return db.query(sqlString);
+}
 
 const createArticlesTable = () => {
   return db.query(`CREATE TABLE articles(
