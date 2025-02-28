@@ -1,4 +1,5 @@
 const db = require("../connection");
+const format = require("pg-format");
 //const {} = require("../seeds/utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
@@ -24,6 +25,9 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
   .then(() => {
     return createCommentsTable();
   })
+  .then(() => {
+    return insertTopicsData(topicData);
+  })
 };
 
 const createTopicsTable = () => {
@@ -33,6 +37,21 @@ const createTopicsTable = () => {
     img_url VARCHAR(1000) NOT NULL
     )`);
 };
+
+const insertTopicsData = (topicsArray) => {
+  const formattedTopics = topicsArray.map((topic) => {
+    return [topic.slug, topic.description, topic.img_url]
+  });
+
+  const sqlString = format(`INSERT INTO topics
+    (slug, description, img_url)
+    VALUES
+    %L
+    RETURNING *
+    `, formattedTopics);
+
+    return db.query(sqlString);
+}
 
 const createUsersTable = () => {
   return db.query(`CREATE TABLE users(
