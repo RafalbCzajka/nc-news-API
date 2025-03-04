@@ -37,6 +37,9 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     .then((response) => {
       return insertCommentsData(response, commentData);
     })
+    .then((response) => {
+      console.log(response);
+    })
 };
 
 const createTopicsTable = () => {
@@ -134,7 +137,7 @@ const createCommentsTable = () => {
 }
 
 const insertCommentsData = (response, commentsArray) => {
-  const articleRef = createRef(response.rows, "article_id", "title");
+  const articleRef = createRef(response.rows, "title", "article_id");
 
   const formattedComments = commentsArray.map((comment) => {
     const formattedComment = convertTimestampToDate(comment);
