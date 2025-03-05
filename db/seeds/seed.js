@@ -1,6 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { convertTimestampToDate, createRef } = require("../seeds/utils");
+const { convertTimestampToDate, createRef, formatData, replaceArticleTitleWithId } = require("../seeds/utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db.query("DROP TABLE IF EXISTS comments;")
@@ -37,9 +37,6 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     .then((response) => {
       return insertCommentsData(response, commentData);
     })
-    .then((response) => {
-      console.log(response);
-    })
 };
 
 const createTopicsTable = () => {
@@ -51,9 +48,8 @@ const createTopicsTable = () => {
 };
 
 const insertTopicsData = (topicsArray) => {
-  const formattedTopics = topicsArray.map((topic) => {
-    return [topic.slug, topic.description, topic.img_url]
-  });
+  const keys = ["slug", "description", "img_url"];
+  const formattedTopics = formatData(topicsArray, keys);
 
   const sqlString = format(`INSERT INTO topics
     (slug, description, img_url)
@@ -74,9 +70,8 @@ const createUsersTable = () => {
 };
 
 const insertUsersData = (usersArray) => {
-  const formattedUsers = usersArray.map((user) => {
-    return [user.username, user.name, user.avatar_url]
-  });
+  const keys = ["username", "name", "avatar_url"];
+  const formattedUsers = formatData(usersArray, keys);
 
   const sqlString = format(`INSERT INTO users
     (username, name, avatar_url)
@@ -92,8 +87,8 @@ const createArticlesTable = () => {
   return db.query(`CREATE TABLE articles(
     article_id SERIAL PRIMARY KEY,
     title VARCHAR NOT NULL,
-    topic VARCHAR REFERENCES topics(slug) ON DELETE CASCADE,
-    author VARCHAR REFERENCES users(username) ON DELETE CASCADE,
+    topic VARCHAR REFERENCES topics(slug) ON DELETE CASCADE NOT NULL,
+    author VARCHAR REFERENCES users(username) ON DELETE CASCADE NOT NULL,
     body TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     votes INT DEFAULT 0,
@@ -102,18 +97,9 @@ const createArticlesTable = () => {
 };
 
 const insertArticlesData = (articlesArray) => {
-  const formattedArticles = articlesArray.map((article) => {
-    const formattedArticle = convertTimestampToDate(article);
-    return [
-      formattedArticle.title,
-      formattedArticle.topic,
-      formattedArticle.author,
-      formattedArticle.body,
-      formattedArticle.created_at,
-      formattedArticle.votes,
-      formattedArticle.article_img_url
-    ];
-  });
+  const convertedTimestampsArticlesArray = articlesArray.map(convertTimestampToDate);
+  const keys = ["title", "topic", "author", "body", "created_at", "votes", "article_img_url"];
+  const formattedArticles = formatData(convertedTimestampsArticlesArray, keys);
 
   const sqlString = format(`INSERT INTO articles
     (title, topic, author, body, created_at, votes, article_img_url)
@@ -128,10 +114,10 @@ const insertArticlesData = (articlesArray) => {
 const createCommentsTable = () => {
   return db.query(`CREATE TABLE comments(
     comment_id SERIAL PRIMARY KEY,
-    article_id INT REFERENCES articles(article_id) ON DELETE CASCADE,
+    article_id INT REFERENCES articles(article_id) ON DELETE CASCADE NOT NULL,
     body TEXT NOT NULL,
     votes INT DEFAULT 0,
-    author VARCHAR REFERENCES users(username) ON DELETE CASCADE,
+    author VARCHAR REFERENCES users(username) ON DELETE CASCADE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 }
@@ -139,16 +125,10 @@ const createCommentsTable = () => {
 const insertCommentsData = (response, commentsArray) => {
   const articleRef = createRef(response.rows, "title", "article_id");
 
-  const formattedComments = commentsArray.map((comment) => {
-    const formattedComment = convertTimestampToDate(comment);
-    return [
-      articleRef[formattedComment.article_title], 
-      formattedComment.body, 
-      formattedComment.votes, 
-      formattedComment.author,
-      formattedComment.created_at
-    ]
-  });
+  const convertedTimestampsCommentsArray = commentsArray.map(convertTimestampToDate);
+  const commentsWithIdsArray = replaceArticleTitleWithId(convertedTimestampsCommentsArray, articleRef);
+  const keys = ["article_id", "body", "votes", "author", "created_at"];
+  const formattedComments = formatData(commentsWithIdsArray, keys);
 
   const sqlString = format(`INSERT INTO comments
   (article_id, body, votes, author, created_at)

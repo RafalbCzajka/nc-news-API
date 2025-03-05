@@ -1,6 +1,8 @@
 const {
   convertTimestampToDate,
-  createRef
+  createRef,
+  formatData,
+  replaceArticleTitleWithId
 } = require("../db/seeds/utils");
 
 describe("convertTimestampToDate", () => {
@@ -71,3 +73,112 @@ describe("createRef", () => {
     })
   })
 });
+
+describe("formatData", () => {
+  it("Returns a nested array", () => {
+    const testData = [{name: "John JavaScript", age: 30}];
+    const testKeys = ["name", "age"];
+    const result = formatData(testData, testKeys);
+    expect(Array.isArray(result)).toBe(true);
+    expect(Array.isArray(result[0])).toBe(true);
+  });
+  it("Returns a nested array of values in the order of keys passed in from array with 1 object", () => {
+    const testData = [{name: "John JavaScript", age: 30}];
+    const testKeys = ["name", "age"];
+    const expected = [["John JavaScript", 30]];
+    const result = formatData(testData, testKeys);
+    expect(result).toEqual(expected);
+  });
+  it("Returns a nested array of values in the order of keys passed in from array with many objects", () => {
+    const testData = [
+      {name: "John JavaScript", age: 30},
+      {name: "Sam Scala", age: 24}
+    ];
+    const testKeys = ["name", "age"];
+    const expected = [
+      ["John JavaScript", 30],
+      ["Sam Scala", 24]
+    ]
+    const result = formatData(testData, testKeys);
+    expect(result).toEqual(expected);
+  });
+  describe("Purity tests:", () => {
+    it("Function does not mutate original input", () => {
+      const testData = [
+        {name: "John JavaScript", age: 30},
+        {name: "Sam Scala", age: 24}
+      ];
+      const testKeys = ["name", "age"];
+      const originalTestData = [
+        {name: "John JavaScript", age: 30},
+        {name: "Sam Scala", age: 24}
+      ];
+      const originalTestKeys = ["name", "age"];
+      formatData(testData, testKeys);
+      expect(testData).toEqual(originalTestData);
+      expect(testKeys).toEqual(originalTestKeys);
+    });
+  })
+})
+
+describe("replaceArticleTitleWithId", () => {
+  it("Returns a nested array", () => {
+    const testArray = [
+      {article_title: 'Living in the shadow of a great man', body: "I find this existence challenging"}
+    ];
+    const testRef = {
+      'Living in the shadow of a great man' : 1
+    };
+    const result = replaceArticleTitleWithId(testArray, testRef);
+    expect(Array.isArray(result)).toBe(true);
+    expect(typeof result[0]).toBe("object");
+  });
+  it("Returns an array where article_title is replaced with article_id from passed reference for an array with a single object", () => {
+    const testArray = [
+      {article_title: 'Living in the shadow of a great man', body: "I find this existence challenging"}
+    ];
+    const testRef = {
+      'Living in the shadow of a great man' : 1
+    };
+    const expected = [
+      {article_id: 1, body: "I find this existence challenging"}
+    ]
+    const result = replaceArticleTitleWithId(testArray, testRef);
+    expect(result).toEqual(expected);
+  });
+  it("Returns an array where article_title is replaced with article_id from passed reference for an array with many objects", () => {
+    const testArray = [
+      {article_title: 'Living in the shadow of a great man', body: "I find this existence challenging"},
+      {article_title: "Eight pug gifs that remind me of mitch", body: "some gifs"}
+    ];
+    const testRef = {
+      'Living in the shadow of a great man' : 1,
+      "Eight pug gifs that remind me of mitch": 2
+    };
+    const expected = [
+      {article_id: 1, body: "I find this existence challenging"},
+      {article_id: 2, body: "some gifs"}
+    ]
+    const result = replaceArticleTitleWithId(testArray, testRef);
+    expect(result).toEqual(expected);
+  });
+  describe("Purity tests:", () => {
+    it("Function does not mutate original input", () => {
+      const testArray = [
+        {article_title: 'Living in the shadow of a great man', body: "I find this existence challenging"}
+      ];
+      const testRef = {
+        'Living in the shadow of a great man' : 1
+      };
+      const originalTestArray = [
+        {article_title: 'Living in the shadow of a great man', body: "I find this existence challenging"}
+      ];
+      const originalTestRef = {
+        'Living in the shadow of a great man' : 1
+      };
+      replaceArticleTitleWithId(testArray, testRef);
+      expect(testArray).toEqual(originalTestArray);
+      expect(testRef).toEqual(originalTestRef);
+    })
+  })
+})

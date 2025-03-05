@@ -10,4 +10,14 @@ const createRef = (array, property1, property2) => {
   return Object.fromEntries(entries);
 };
 
-module.exports = {convertTimestampToDate, createRef};
+const formatData = (dataArray, keys) => {
+  return dataArray.map((data) => keys.map((key) => data[key]));
+};
+
+const replaceArticleTitleWithId = (dataArray, reference) => {
+  return dataArray.map(({article_title, ...rest}) => {
+    return {...rest, article_id: reference[article_title]}
+  });
+}
+
+module.exports = {convertTimestampToDate, createRef, formatData, replaceArticleTitleWithId};
