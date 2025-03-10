@@ -23,4 +23,32 @@ describe("/api", () => {
         expect(endpoints).toEqual(endpointsJson);
       });
   });
+  test("404: Responds with path not found when invalid path entered", () => {
+    return request(app)
+      .get("/invalidpath")
+      .expect(404)
+      .then(({body}) => {
+        expect(body.msg).toBe("path not found");
+      });
+  });
 });
+
+describe("/api/topics", () => {
+  describe("GET", () => {
+    test("200: Responds with array of topic objects with slug and description properties", () => {
+      return request(app)
+        .get("/api/topics")
+        .expect(200)
+        .then(({body: {topics}}) => {
+          expect(topics.length).toBe(3)
+
+          topics.forEach(topic => {
+            const {slug, description} = topic
+
+            expect(typeof slug).toBe("string")
+            expect(typeof description).toBe("string")
+          });
+        })
+    });
+  })
+})
