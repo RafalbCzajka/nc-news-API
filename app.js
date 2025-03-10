@@ -3,13 +3,20 @@ const app = express();
 
 const {getEndpoints} = require("./controllers/api.controller");
 const {getAllTopics} = require("./controllers/topics.controller");
-const {invalidPathHandler, serverErrorHandler} = require("./controllers/errors.controller");
+const {getArticleById} = require("./controllers/articles.controller");
+const {invalidPathHandler, serverErrorHandler, customErrorHandler, psqlErrorHandler} = require("./controllers/errors.controller");
 
 app.get("/api", getEndpoints);
 
 app.get("/api/topics", getAllTopics);
 
+app.get("/api/articles/:article_id", getArticleById);
+
 app.all('*', invalidPathHandler);
+
+app.use(psqlErrorHandler);
+
+app.use(customErrorHandler);
 
 app.use(serverErrorHandler);
 
