@@ -1,6 +1,7 @@
 const endpointsJson = require("../endpoints.json");
 const request = require("supertest");
 const app = require("../app");
+require("jest-sorted");
 
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
@@ -43,13 +44,131 @@ describe("/api/topics", () => {
           expect(topics.length).toBe(3)
 
           topics.forEach(topic => {
-            const {slug, description} = topic
+            const {slug, description} = topic;
 
-            expect(typeof slug).toBe("string")
-            expect(typeof description).toBe("string")
+            expect(typeof slug).toBe("string");
+            expect(typeof description).toBe("string");
           });
         })
     });
+  })
+})
+
+describe("/api/articles", () => {
+  describe("GET", () => {
+    test("200 Responds with array of all articles with all properties of articles and a comment_count property", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({body: {articles}}) => {
+          expect(Array.isArray(articles)).toBe(true);
+          expect(articles.length).toBe(13);
+
+          articles.forEach((article) => {
+            expect(article).toHaveProperty("author");
+            expect(article).toHaveProperty("title");
+            expect(article).toHaveProperty("article_id");
+            expect(article).toHaveProperty("topic");
+            expect(article).toHaveProperty("created_at");
+            expect(article).toHaveProperty("votes");
+            expect(article).toHaveProperty("article_img_url");
+            expect(article).toHaveProperty("comment_count");
+          })
+        })
+    })
+    test("200 Responds with filtered array of articles by author 'icellusedkars'", () => {
+      return request(app)
+        .get("/api/articles?author=icellusedkars")
+        .expect(200)
+        .then(({body: {articles}}) => {
+          expect(Array.isArray(articles)).toBe(true);
+          expect(articles.length).toBe(6);
+
+          articles.forEach((article) => {
+            expect(article.author).toBe("icellusedkars");
+          })
+        })
+    })
+    test("200 Responds with filtered array of articles by topic 'mitch'", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({body: {articles}}) => {
+          expect(Array.isArray(articles)).toBe(true);
+          expect(articles.length).toBe(12);
+
+          articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          })
+        })
+    })
+    test("200 Responds with sorted array by queried parameter (article_id)", () => {
+      return request(app)
+      .get("/api/articles?sort_by=article_id")
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles).toBeSortedBy("article_id");
+      })
+    })
+    test("200 Responds with sorted array by default value (created_at) in descending order", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({body: {articles}}) => {
+          expect(Array.isArray(articles)).toBe(true);
+          expect(articles).toBeSortedBy("created_at", { descending: true});
+        })
+    })
+    test("200 Responds with sorted array by queried parameter (comment_count) and ordered by queried parameter (ascending)", () => {
+      return request(app)
+        .get("/api/articles?sort_by=comment_count&order=asc")
+        .expect(200)
+        .then(({body: {articles}}) => {
+          expect(Array.isArray(articles)).toBe(true);
+          expect(articles).toBeSortedBy("comment_count", {ascending: true})
+        })
+    })
+    test("400 Responds with invalid query parameter: sort_by if passed in any value outside of the sort_by greenlist", () => {
+      return request(app)
+      .get("/api/articles?sort_by=notAValidColumnName")
+      .expect(400)
+      .then(({body}) => {
+        expect(body.msg).toBe("invalid query parameter: sort_by");
+      })
+    })
+    test("400 Responds with invalid query parameter: order if passed in any value outside of the order greenlist", () => {
+      return request(app)
+      .get("/api/articles?sort_by=title&order=random")
+      .expect(400)
+      .then(({body}) => {
+        expect(body.msg).toBe("invalid query parameter: order");
+      })
+    })
+    test("404 Responds with username (the column) not found if passed in an author that doesn't exist in the users table", () => {
+      return request(app)
+        .get("/api/articles?author=notARealUser")
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("username not found");
+        })
+    })
+    test("404 Responds with slug not found if passed in a topic that doesn't exist in the topics table", () => {
+      return request(app)
+      .get("/api/articles?topic=notARealTopic")
+      .expect(404)
+      .then(({body}) => {
+        expect(body.msg).toBe("slug not found");
+      })
+    })
+    test("200 Responds with empty array when a valid query is made but there are no results", () => {
+      return request(app)
+      .get("/api/articles?author=lurker&topic=cats")
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(articles.length).toBe(0);
+      })
+    })
   })
 })
 

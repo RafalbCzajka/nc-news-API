@@ -1,5 +1,7 @@
 const db = require("../../db/connection");
 
+//Seeding Utils
+
 const convertTimestampToDate = ({ created_at, ...otherProperties }) => {
   if (!created_at) return { ...otherProperties };
   return { created_at: new Date(created_at), ...otherProperties };
@@ -20,4 +22,15 @@ const replaceArticleTitleWithId = (dataArray, reference) => {
   });
 }
 
-module.exports = {convertTimestampToDate, createRef, formatData, replaceArticleTitleWithId};
+//Data validation utils
+
+const checkExists = (table, column, value) => {
+  return db.query(`SELECT ${column} FROM ${table} WHERE ${column} = $1`, [value])
+    .then(({rows}) => {
+      if (rows.length === 0) {
+        return Promise.reject({status: 404, msg: `${column} not found`});
+      } else return true;
+    })
+}
+
+module.exports = {convertTimestampToDate, createRef, formatData, replaceArticleTitleWithId, checkExists};

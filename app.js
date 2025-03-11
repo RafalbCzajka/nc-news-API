@@ -3,7 +3,7 @@ const app = express();
 
 const {getEndpoints} = require("./controllers/api.controller");
 const {getAllTopics} = require("./controllers/topics.controller");
-const {getArticleById} = require("./controllers/articles.controller");
+const {getArticleById, getAllArticles} = require("./controllers/articles.controller");
 const {invalidPathHandler, serverErrorHandler, customErrorHandler, psqlErrorHandler} = require("./controllers/errors.controller");
 
 app.get("/api", getEndpoints);
@@ -11,6 +11,8 @@ app.get("/api", getEndpoints);
 app.get("/api/topics", getAllTopics);
 
 app.get("/api/articles/:article_id", getArticleById);
+
+app.get("/api/articles", getAllArticles);
 
 app.all('*', invalidPathHandler);
 
