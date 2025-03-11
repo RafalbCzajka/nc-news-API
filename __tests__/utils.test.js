@@ -210,6 +210,6 @@ describe("checkExists", () => {
     const testColumn = "username";
     const testValue = "notARealPerson";
     const result = checkExists(testTable, testColumn, testValue);
-    expect(result).rejects.toEqual({status: 404, msg: "username not found"});
+    expect(result).resolves.toBe(false);
   })
 })

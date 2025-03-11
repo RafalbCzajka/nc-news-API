@@ -60,7 +60,16 @@ exports.fetchAllArticles = async (queries) => {
     queryString += ` GROUP BY articles.article_id
     ORDER BY ${sort_by} ${order}`;
 
-    await Promise.all(checkPromises);
+    const checkResults = await Promise.all(checkPromises);
+
+    if (author && !checkResults[0]) {
+        return Promise.reject({status: 404, msg: "username not found"});
+    }
+    if (topic && checkResults.length > 1 && !checkResults[1]) {
+        return Promise.reject({status: 404, msg: "slug not found"});
+    } else if (topic && !checkResults[0]) {
+        return Promise.reject({status: 404, msg: "slug not found"});
+    }
 
     return db.query(queryString, queryParams).then(({rows}) => {
         return rows;
