@@ -208,3 +208,51 @@ describe("/api/articles/:article_id", () => {
     })
   })
 })
+
+describe("/api/articles/:article_id/comments", () => {
+  describe("GET", () => {
+    test("200: Responds with an array of comments for the given article_id sorted by most recent first", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({body: {comments}}) => {
+          expect(Array.isArray(comments)).toBe(true);
+          expect(comments.length).toBe(11);
+          expect(comments).toBeSortedBy("created_at", {descending: true});
+
+          comments.forEach((comment) => {
+            expect(comment).toHaveProperty("comment_id");
+            expect(comment).toHaveProperty("votes");
+            expect(comment).toHaveProperty("created_at");
+            expect(comment).toHaveProperty("author");
+            expect(comment).toHaveProperty("body");
+            expect(comment).toHaveProperty("article_id");
+          })
+        })
+    })
+    test("200: Responds with empty array if no comments exist for given article_id", () => {
+      return request(app)
+        .get("/api/articles/4/comments")
+        .expect(200)
+        .then(({body: {comments}}) => {
+          expect(comments.length).toBe(0);
+        })
+    })
+    test("400: Responds with bad request if article_id is not a number", () => {
+      return request(app)
+        .get("/api/articles/not-a-number/comments")
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+    test("404: Responds with article_id not found if article_id does not exist", () => {
+      return request(app)
+        .get("/api/articles/9999/comments")
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("article_id not found");
+        })
+    })
+  })
+})
