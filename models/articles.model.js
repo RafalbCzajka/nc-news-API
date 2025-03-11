@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const {checkExists} = require("../db/seeds/utils");
 
 exports.fetchArticleById = (id) => {
     return db.query(`SELECT * FROM articles WHERE article_id = $1`, [id])
@@ -10,17 +11,17 @@ exports.fetchArticleById = (id) => {
         });
 };
 
-exports.fetchAllArticles = (queries) => {
+exports.fetchAllArticles = async (queries) => {
     let {author, topic, sort_by = "created_at", order = sort_by === "created_at" ? "desc" : "asc"} = queries;
 
     const validSortBy = ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"];
     const validOrder = ["asc", "desc"];
 
     if (!validSortBy.includes(sort_by)) {
-        sort_by = "created_at";
+        return Promise.reject({status: 400, msg: "invalid query parameter: sort_by"});
     }
     if (!validOrder.includes(order)) {
-        order = "desc";
+        return Promise.reject({status: 400, msg: "invalid query parameter: order"});
     }
     if (sort_by !== "comment_count") {
         sort_by = `articles.${sort_by}`;
@@ -34,15 +35,19 @@ exports.fetchAllArticles = (queries) => {
                             articles.created_at, 
                             articles.votes, 
                             articles.article_img_url, 
-                            COUNT(comments.article_id) AS comment_count 
+                            CAST(COUNT(comments.article_id) AS INTEGER) AS comment_count 
     FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id`;
 
+    const checkPromises = [];
+
     if (author) {
+        checkPromises.push(checkExists("users", "username", author));
         queryParams.push(author);
         queryString += ` WHERE articles.author = $${queryParams.length}`;
     }
 
     if (topic) {
+        checkPromises.push(checkExists("topics", "slug", topic));
         if (queryParams.length > 0) {
             queryString += ` AND`;
         } else {
@@ -54,6 +59,8 @@ exports.fetchAllArticles = (queries) => {
 
     queryString += ` GROUP BY articles.article_id
     ORDER BY ${sort_by} ${order}`;
+
+    await Promise.all(checkPromises);
 
     return db.query(queryString, queryParams).then(({rows}) => {
         return rows;

@@ -2,8 +2,13 @@ const {
   convertTimestampToDate,
   createRef,
   formatData,
-  replaceArticleTitleWithId
+  replaceArticleTitleWithId,
+  checkExists
 } = require("../db/seeds/utils");
+
+const db = require("../db/connection");
+const seed = require("../db/seeds/seed");
+const testData = require("../db/data/test-data");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -180,5 +185,31 @@ describe("replaceArticleTitleWithId", () => {
       expect(testArray).toEqual(originalTestArray);
       expect(testRef).toEqual(originalTestRef);
     })
+  })
+})
+
+describe("checkExists", () => {
+
+  beforeEach(() => {
+    return seed(testData);
+  });
+  
+  afterAll(() => {
+    return db.end();
+  });
+
+  it("If checked value exists returns true", () => {
+    const testTable = "users";
+    const testColumn = "username";
+    const testValue = "lurker";
+    const result = checkExists(testTable, testColumn, testValue);
+    expect(result).resolves.toBe(true);
+  })
+  it("If checked value doesn't exist returns Promise.reject", () => {
+    const testTable = "users";
+    const testColumn = "username";
+    const testValue = "notARealPerson";
+    const result = checkExists(testTable, testColumn, testValue);
+    expect(result).rejects.toEqual({status: 404, msg: "username not found"});
   })
 })

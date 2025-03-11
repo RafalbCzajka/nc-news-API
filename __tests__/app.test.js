@@ -120,17 +120,55 @@ describe("/api/articles", () => {
           expect(articles).toBeSortedBy("created_at", { descending: true});
         })
     })
-    test.skip("200 Responds with sorted array by queried parameter (comment_count) and ordered by queried parameter (ascending)", () => {
+    test("200 Responds with sorted array by queried parameter (comment_count) and ordered by queried parameter (ascending)", () => {
       return request(app)
         .get("/api/articles?sort_by=comment_count&order=asc")
         .expect(200)
         .then(({body: {articles}}) => {
           expect(Array.isArray(articles)).toBe(true);
-          expect(articles).toBeSortedBy("comment_count", {descending: false})
+          expect(articles).toBeSortedBy("comment_count", {ascending: true})
         })
     })
-    test.todo("400 invalid query")
-    test.todo("200 valid query but empty")
+    test("400 Responds with invalid query parameter: sort_by if passed in any value outside of the sort_by greenlist", () => {
+      return request(app)
+      .get("/api/articles?sort_by=notAValidColumnName")
+      .expect(400)
+      .then(({body}) => {
+        expect(body.msg).toBe("invalid query parameter: sort_by");
+      })
+    })
+    test("400 Responds with invalid query parameter: order if passed in any value outside of the order greenlist", () => {
+      return request(app)
+      .get("/api/articles?sort_by=title&order=random")
+      .expect(400)
+      .then(({body}) => {
+        expect(body.msg).toBe("invalid query parameter: order");
+      })
+    })
+    test("404 Responds with username (the column) not found if passed in an author that doesn't exist in the users table", () => {
+      return request(app)
+        .get("/api/articles?author=notARealUser")
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("username not found");
+        })
+    })
+    test("404 Responds with slug not found if passed in a topic that doesn't exist in the topics table", () => {
+      return request(app)
+      .get("/api/articles?topic=notARealTopic")
+      .expect(404)
+      .then(({body}) => {
+        expect(body.msg).toBe("slug not found");
+      })
+    })
+    test("200 Responds with empty array when a valid query is made but there are no results", () => {
+      return request(app)
+      .get("/api/articles?author=lurker&topic=cats")
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(articles.length).toBe(0);
+      })
+    })
   })
 })
 
