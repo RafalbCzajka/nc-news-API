@@ -255,4 +255,119 @@ describe("/api/articles/:article_id/comments", () => {
         })
     })
   })
+  describe("POST", () => {
+    test("201: successfully posts comment on given article", () => {
+      const testComment = {
+        username: "lurker",
+        body: "Great article!"
+      };
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(201)
+        .then(({body: {comment}}) => {
+          expect(comment).toHaveProperty("comment_id");
+          expect(comment.author).toBe(testComment.username);
+          expect(comment.body).toBe(testComment.body);
+          expect(comment.article_id).toBe(1);
+        })
+    })
+    test("404: Responds with article not found if article_id does not exist", () => {
+      const testComment = {
+        username: "lurker",
+        body: "it's ok."
+      };
+
+      return request(app)
+        .post("/api/articles/999/comments")
+        .send(testComment)
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("article not found");
+        })
+    })
+    test("404: Responds with user not found if username does not exist", () => {
+      const testComment = {
+        username: "invalidUser",
+        body: "hello world"
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("user not found");
+        })
+    })
+    test("400: Responds with username is missing from request if username is missing in the request", () => {
+      const testComment = {
+        body: "hello world"
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("username is missing from request");
+        })
+    })
+    test("400: Responds with body is missing from request if body is missing in the request", () => {
+      const testComment = {
+        username: "lurker"
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("body is missing from request");
+        })
+    })
+    test.skip("400: Responds with bad request if article_id is not a number", () => {
+      const testComment = {
+        username: "lurker",
+        body: "This is my favourite article on here"
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request")
+        })
+    })
+    test.skip("400: Responds with bad request if request body is not a string", () => {
+      const testComment = {
+        username: "lurker",
+        body: 123
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+    test.skip("201: Should prevent SQL injection and handle malicious input gracefully" , () => {
+      const testComment = {
+        username: "lurker",
+        body: "Nice Article!; DROP TABLE comments;"
+      }
+
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(201)
+        .then(({body: {comment}}) => {
+          expect(comment.body).toBe(testComment.body);
+        })
+    })
+  })
 })
