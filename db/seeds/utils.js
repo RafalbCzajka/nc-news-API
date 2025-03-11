@@ -1,4 +1,5 @@
 const db = require("../../db/connection");
+const format = require("pg-format");
 
 //Seeding Utils
 
@@ -25,11 +26,10 @@ const replaceArticleTitleWithId = (dataArray, reference) => {
 //Data validation utils
 
 const checkExists = (table, column, value) => {
-  return db.query(`SELECT ${column} FROM ${table} WHERE ${column} = $1`, [value])
+  const queryString = format(`SELECT %I FROM %I WHERE %I = $1`, column, table, column);
+  return db.query(queryString, [value])
     .then(({rows}) => {
-      if (rows.length === 0) {
-        return Promise.reject({status: 404, msg: `${column} not found`});
-      } else return true;
+      return rows.length > 0;
     })
 }
 
