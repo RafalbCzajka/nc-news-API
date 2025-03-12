@@ -20,6 +20,8 @@ exports.fetchCommentsByArticleId = (id) => {
 exports.addComment = (article_id, username, body) => {
     if (!body) {
         return Promise.reject({status: 400, msg: "body is missing from request"});
+    } else if (typeof body !== "string") {
+        return Promise.reject({status: 400, msg: "bad request"});
     }
     if (!username) {
         return Promise.reject({status: 400, msg: "username is missing from request"});
@@ -41,7 +43,7 @@ exports.addComment = (article_id, username, body) => {
         const queryString = `
         INSERT INTO comments (article_id, author, body)
         VALUES ($1, $2, $3)
-        RETURNING comment_id, article_id, author, body, created_at;`;
+        RETURNING comment_id, article_id, author, body, votes, created_at;`;
     
         return db.query(queryString, [article_id, username, body]);
     })

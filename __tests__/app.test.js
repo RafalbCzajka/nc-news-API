@@ -327,21 +327,21 @@ describe("/api/articles/:article_id/comments", () => {
           expect(body.msg).toBe("body is missing from request");
         })
     })
-    test.skip("400: Responds with bad request if article_id is not a number", () => {
+    test("400: Responds with bad request if article_id is not a number", () => {
       const testComment = {
         username: "lurker",
         body: "This is my favourite article on here"
       }
 
       return request(app)
-        .post("/api/articles/1/comments")
+        .post("/api/articles/not-a-number/comments")
         .send(testComment)
         .expect(400)
         .then(({body}) => {
           expect(body.msg).toBe("bad request")
         })
     })
-    test.skip("400: Responds with bad request if request body is not a string", () => {
+    test("400: Responds with bad request if request body is not a string", () => {
       const testComment = {
         username: "lurker",
         body: 123
@@ -355,7 +355,7 @@ describe("/api/articles/:article_id/comments", () => {
           expect(body.msg).toBe("bad request");
         })
     })
-    test.skip("201: Should prevent SQL injection and handle malicious input gracefully" , () => {
+    test("201: Should prevent SQL injection and handle malicious input gracefully" , () => {
       const testComment = {
         username: "lurker",
         body: "Nice Article!; DROP TABLE comments;"
