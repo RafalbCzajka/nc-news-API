@@ -228,6 +228,32 @@ describe("/api/articles/:article_id", () => {
           expect(body.msg).toBe("article not found");
         })
     })
+    test("200: Responds with article object including comment_count", () => {
+      return request(app)
+        .get("/api/articles/1")
+        .expect(200)
+        .then(({body: {article}}) => {
+          const date = new Date(1594329060000).toISOString;
+          expect(article.article_id).toBe(1);
+          expect(article.title).toBe("Living in the shadow of a great man");
+          expect(article.topic).toBe("mitch");
+          expect(article.author).toBe("butter_bridge");
+          expect(article.body).toBe("I find this existence challenging");
+          expect(new Date(article.created_at).toISOString).toBe(date);
+          expect(article.votes).toBe(100);
+          expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");
+          expect(article).toHaveProperty("comment_count");
+          expect(article.comment_count).toBe(11);
+        })
+    })
+    test("200: Responds with comment_count of 0 if no comments exist for the specified article", () => {
+      return request(app)
+        .get("/api/articles/2")
+        .expect(200)
+        .then(({body: {article}}) => {
+          expect(article.comment_count).toBe(0);
+        })
+    })
   })
   describe("PATCH", () => {
     test("200: Responds with the updated article after increasing votes", () => {
