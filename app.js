@@ -4,14 +4,18 @@ const app = express();
 const {getEndpoints} = require("./controllers/api.controller");
 const {getAllTopics} = require("./controllers/topics.controller");
 const {getArticleById, getAllArticles} = require("./controllers/articles.controller");
-const {getCommentsByArticleId} = require("./controllers/comments.controller");
+const {getCommentsByArticleId, postComment} = require("./controllers/comments.controller");
 const {invalidPathHandler, serverErrorHandler, customErrorHandler, psqlErrorHandler} = require("./controllers/errors.controller");
+
+app.use(express.json());
 
 app.get("/api", getEndpoints);
 
 app.get("/api/topics", getAllTopics);
 
-app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
+
+app.post("/api/articles/:article_id/comments", postComment);
 
 app.get("/api/articles/:article_id", getArticleById);
 
