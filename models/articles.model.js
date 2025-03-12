@@ -75,3 +75,21 @@ exports.fetchAllArticles = async (queries) => {
         return rows;
     })
 }
+
+exports.updateArticle = (id, votes) => {
+    if (votes === undefined || typeof votes !== "number") {
+        return Promise.reject({status: 400, msg: "bad request"});
+    }
+
+    const sqlString = `UPDATE articles SET votes = votes + $1 
+    WHERE article_id = $2
+    RETURNING *;`;
+
+    return db.query(sqlString, [votes, id])
+    .then(({rows}) => {
+        if (rows.length === 0) {
+            return Promise.reject({status: 404, msg: "article not found"});
+        }
+        return rows[0];
+    })
+}

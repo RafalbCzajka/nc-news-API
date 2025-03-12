@@ -207,6 +207,76 @@ describe("/api/articles/:article_id", () => {
         })
     })
   })
+  describe("PATCH", () => {
+    test("200: Responds with the updated article after increasing votes", () => {
+      return request(app)
+        .patch("/api/articles/3")
+        .send({inc_votes: 5})
+        .expect(200)
+        .then(({body: {article}}) => {
+          expect(article.article_id).toBe(3);
+          expect(article.votes).toBe(5);
+        })
+    })
+    test("200: Responds with the updated article after decreasing votes", () => {
+      return request(app)
+        .patch("/api/articles/3")
+        .send({inc_votes: -5})
+        .expect(200)
+        .then(({body: {article}}) => {
+          expect(article.article_id).toBe(3);
+          expect(article.votes).toBe(-5);
+        })
+    })
+    test("404: Responds with article not found if article_id does not exist", () => {
+      return request(app)
+        .patch("/api/articles/9999")
+        .send({inc_votes: 1})
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("article not found");
+        })
+    })
+    test("400: Responds with bad request if inc_votes is missing from request", () => {
+      return request(app)
+        .patch("/api/articles/3")
+        .send({})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+    test("400: Responds with bad request if article_id is not a number", () => {
+      return request(app)
+        .patch("/api/articles/not-a-number")
+        .send({inc_votes: 2})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+    test("400: Responds with bad request if inc_votes is not a number", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({inc_votes: "not-a-number"})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+    test("200: Ignores any additional properties other than inc_votes", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({inc_votes: 50, body: "This text should be ignored"})
+        .expect(200)
+        .then(({body: {article}}) => {
+          expect(article.article_id).toBe(1);
+          expect(article.votes).toBe(150);
+          expect(article.body).not.toBe("This text should be ignored");
+          expect(article.body).toBe("I find this existence challenging");
+        })
+    })
+  })
 })
 
 describe("/api/articles/:article_id/comments", () => {

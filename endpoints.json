@@ -42,6 +42,23 @@
       }
     }
   },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates the votes of specified article",
+    "queries": [],
+    "exampleRequest": {
+      "inc_votes": 1
+    },
+    "exampleResponse": {
+      "article_id": 3,
+      "title":"22 Amazing open source React projects",
+      "topic": "coding",
+      "author": "happyamy2016", 
+      "body": "Text from the article..",
+      "created_at": "2020-02-29 11:12:00.000Z",
+      "votes": 1,
+      "article_img_url": "URL of image in the article.."
+    }
+  },
   "GET /api/articles/:article_id/comments": {
     "description": "serves an array of comments for specified article sorted by most recent",
     "queries": [],
@@ -68,7 +85,7 @@
         "comment_id": 1,
         "article_id": 18,
         "body": "Text from the comment..",
-        "votes": -1,
+        "votes": 0,
         "author": "tickle122",
         "created_at": "2020-05-21 23:19:00.180Z"
       }
