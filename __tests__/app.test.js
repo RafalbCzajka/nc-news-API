@@ -54,6 +54,28 @@ describe("/api/topics", () => {
   })
 })
 
+describe("/api/users", () => {
+  describe("GET", () => {
+    test("200: Responds with an array of user objects with username, name, and avatar_url properties for all users", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({body: {users}}) => {
+          expect(Array.isArray(users)).toBe(true);
+          expect(users.length).toBe(4);
+
+          users.forEach((user) => {
+            const {username, name, avatar_url} = user;
+
+            expect(typeof username).toBe("string");
+            expect(typeof name).toBe("string");
+            expect(typeof avatar_url).toBe("string");
+          })
+        })
+    })
+  })
+})
+
 describe("/api/articles", () => {
   describe("GET", () => {
     test("200 Responds with array of all articles with all properties of articles and a comment_count property", () => {
