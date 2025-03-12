@@ -441,3 +441,34 @@ describe("/api/articles/:article_id/comments", () => {
     })
   })
 })
+
+describe("/api/comments/:comment_id", () => {
+  describe("DELETE", () => {
+    test("204: Successfully deletes a comment and returns no content", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(() => {
+          return db.query("SELECT * FROM comments WHERE comment_id = 1;");
+        }).then(({rows}) => {
+          expect(rows.length).toBe(0);
+        })
+    })
+    test("404: Responds with comment not found if comment_id does not exist", () => {
+      return request(app)
+        .delete("/api/comments/9999")
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("comment not found");
+        })
+    })
+    test("400: Responds with bad request if comment_id is not a number", () => {
+      return request(app)
+        .delete("/api/comments/not-a-number")
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+  })
+})

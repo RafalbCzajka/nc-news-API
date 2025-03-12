@@ -90,5 +90,12 @@
         "created_at": "2020-05-21 23:19:00.180Z"
       }
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the specified comment",
+    "queries": [],
+    "exampleReqest": {
+      "comment_id": 1
+    }
   }
 }
