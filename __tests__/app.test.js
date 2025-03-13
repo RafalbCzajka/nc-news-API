@@ -353,10 +353,11 @@ describe("/api/articles/:article_id/comments", () => {
             expect(comment).toHaveProperty("author");
             expect(comment).toHaveProperty("body");
             expect(comment).toHaveProperty("article_id");
+            expect(comment.article_id).toBe(1);
           })
         })
     })
-    test("200: Responds with empty array if no comments exist for given article_id", () => {
+    test("200: Responds with empty array if no comments exist for an article that exists", () => {
       return request(app)
         .get("/api/articles/4/comments")
         .expect(200)
