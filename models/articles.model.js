@@ -84,8 +84,8 @@ exports.fetchAllArticles = async (queries) => {
 }
 
 exports.updateArticle = (id, votes) => {
-    if (votes === undefined || typeof votes !== "number") {
-        return Promise.reject({status: 400, msg: "bad request"});
+    if (votes === undefined) {
+        return this.fetchArticleById(id);
     }
 
     const sqlString = `UPDATE articles SET votes = votes + $1 
