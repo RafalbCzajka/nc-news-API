@@ -395,12 +395,20 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(201)
         .then(({body: {comment}}) => {
           expect(comment).toHaveProperty("comment_id");
+          expect(typeof comment.comment_id).toBe("number");
           expect(comment.author).toBe(testComment.username);
+          expect(typeof comment.author).toBe("string");
           expect(comment.body).toBe(testComment.body);
+          expect(typeof comment.body).toBe("string");
           expect(comment.article_id).toBe(1);
+          expect(typeof comment.article_id).toBe("number");
+          expect(comment.votes).toBe(0);
+          expect(typeof comment.votes).toBe("number");
+          expect(comment).toHaveProperty("created_at");
+          expect(new Date(comment.created_at).toString()).not.toBe("Invalid Date");
         })
     })
-    test("404: Responds with article not found if article_id does not exist", () => {
+    test("404: Responds with resource not found if article_id does not exist", () => {
       const testComment = {
         username: "lurker",
         body: "it's ok."
@@ -411,10 +419,10 @@ describe("/api/articles/:article_id/comments", () => {
         .send(testComment)
         .expect(404)
         .then(({body}) => {
-          expect(body.msg).toBe("article not found");
+          expect(body.msg).toBe("resource not found");
         })
     })
-    test("404: Responds with user not found if username does not exist", () => {
+    test("404: Responds with resource not found if username does not exist", () => {
       const testComment = {
         username: "invalidUser",
         body: "hello world"
@@ -425,7 +433,7 @@ describe("/api/articles/:article_id/comments", () => {
         .send(testComment)
         .expect(404)
         .then(({body}) => {
-          expect(body.msg).toBe("user not found");
+          expect(body.msg).toBe("resource not found");
         })
     })
     test("400: Responds with username is missing from request if username is missing in the request", () => {
