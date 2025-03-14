@@ -36,4 +36,6 @@ jobs:
     needs: test
     steps:
       - name: Deploy to Render
-        run: curl ${{secrets.RENDER_DEPLOY_HOOK_URL}}
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl "$deploy_url"
