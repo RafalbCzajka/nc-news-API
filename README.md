@@ -34,16 +34,16 @@ npm install
 Under normal circumstances environment variable files would be kept private, however they are required in order for this project to be accessible locally.
 
 Two files need to be created in the root of the directory:
-* ```.env.development```
-* ```.env.test```
+* `.env.development`
+* `.env.test`
 
-```.env.development``` should contain:
+`.env.development` should contain:
 
 ```
 PGDATABASE=nc_news
 ```
 
-```.env.test``` should contain:
+`.env.test` should contain:
 
 ```
 PGDATABASE=nc_news_test
@@ -51,22 +51,22 @@ PGDATABASE=nc_news_test
 
 ### Run scripts to set up local development and testing databases
 
-First run the ```setup-dbs``` script which will create two databases, ```nc_news``` for development, and ```nc_news_test``` for testing.
+First run the `setup-dbs` script which will create two databases, `nc_news` for development, and `nc_news_test` for testing.
 ```
 npm run setup-dbs
 ```
-Then run the ```seed-dev``` script to seed the newly created development database with mock data.
+Then run the `seed-dev` script to seed the newly created development database with mock data.
 ```
 npm run seed-dev
 ```
-```nc_news_test``` is re-seeded before each test is run in jest.
+`nc_news_test` is re-seeded before each test is run in jest.
 
 ## How to run tests
 
 There are three test files included in the project:
-- ```app.test.js``` - For testing the express application.
-- ```seed.test.js``` - For testing the seeding of the database.
-- ```utils.test.js``` - For testing utility functions used throughout the project.
+- `app.test.js` - For testing the express application.
+- `seed.test.js` - For testing the seeding of the database.
+- `utils.test.js` - For testing utility functions used throughout the project.
 
 To run all tests:
 ```
@@ -77,4 +77,4 @@ To run an individual test file:
 ```
 npm test app.test.js
 ```
-```app.test.js``` can be replaced with any of the other test files.
+`app.test.js` can be replaced with any of the other test files.

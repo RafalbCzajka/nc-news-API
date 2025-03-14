@@ -6,11 +6,14 @@ exports.psqlErrorHandler = (err, req, res, next) => {
     if (err.code === "22P02") {
         return res.status(400).send({msg: "bad request"})
     }
+    if (err.code === "23503") {
+        return res.status(404).send({msg: "resource not found"})
+    }
     next(err);
 }
 
 exports.customErrorHandler = (err, req, res, next) => {
-    if (err.status) {
+    if (err.status && err.msg) {
         return res.status(err.status).send({msg: err.msg})
     }
     next(err);

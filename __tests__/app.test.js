@@ -88,13 +88,21 @@ describe("/api/articles", () => {
 
           articles.forEach((article) => {
             expect(article).toHaveProperty("author");
+            expect(typeof article.author).toBe("string");
             expect(article).toHaveProperty("title");
+            expect(typeof article.title).toBe("string");
             expect(article).toHaveProperty("article_id");
+            expect(typeof article.article_id).toBe("number");
             expect(article).toHaveProperty("topic");
+            expect(typeof article.topic).toBe("string");
             expect(article).toHaveProperty("created_at");
+            expect(typeof article.created_at).toBe("string")
             expect(article).toHaveProperty("votes");
+            expect(typeof article.votes).toBe("number");
             expect(article).toHaveProperty("article_img_url");
+            expect(typeof article.article_img_url).toBe("string");
             expect(article).toHaveProperty("comment_count");
+            expect(typeof article.comment_count).toBe("number");
           })
         })
     })
@@ -262,8 +270,15 @@ describe("/api/articles/:article_id", () => {
         .send({inc_votes: 5})
         .expect(200)
         .then(({body: {article}}) => {
+          const date = new Date(1604394720000).toISOString;
           expect(article.article_id).toBe(3);
+          expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+          expect(article.topic).toBe("mitch");
+          expect(article.author).toBe("icellusedkars");
+          expect(article.body).toBe("some gifs");
+          expect(new Date(article.created_at).toISOString).toBe(date);
           expect(article.votes).toBe(5);
+          expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");
         })
     })
     test("200: Responds with the updated article after decreasing votes", () => {
@@ -272,8 +287,15 @@ describe("/api/articles/:article_id", () => {
         .send({inc_votes: -5})
         .expect(200)
         .then(({body: {article}}) => {
+          const date = new Date(1604394720000).toISOString;
           expect(article.article_id).toBe(3);
+          expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+          expect(article.topic).toBe("mitch");
+          expect(article.author).toBe("icellusedkars");
+          expect(article.body).toBe("some gifs");
+          expect(new Date(article.created_at).toISOString).toBe(date);
           expect(article.votes).toBe(-5);
+          expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");
         })
     })
     test("404: Responds with article not found if article_id does not exist", () => {
@@ -285,13 +307,21 @@ describe("/api/articles/:article_id", () => {
           expect(body.msg).toBe("article not found");
         })
     })
-    test("400: Responds with bad request if inc_votes is missing from request", () => {
+    test("200: Responds with the unchanged article if inc_votes is missing from request", () => {
       return request(app)
         .patch("/api/articles/3")
         .send({})
-        .expect(400)
-        .then(({body}) => {
-          expect(body.msg).toBe("bad request");
+        .expect(200)
+        .then(({body: {article}}) => {
+          const date = new Date(1604394720000).toISOString;
+          expect(article.article_id).toBe(3);
+          expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+          expect(article.topic).toBe("mitch");
+          expect(article.author).toBe("icellusedkars");
+          expect(article.body).toBe("some gifs");
+          expect(new Date(article.created_at).toISOString).toBe(date);
+          expect(article.votes).toBe(0);
+          expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");
         })
     })
     test("400: Responds with bad request if article_id is not a number", () => {
@@ -345,10 +375,11 @@ describe("/api/articles/:article_id/comments", () => {
             expect(comment).toHaveProperty("author");
             expect(comment).toHaveProperty("body");
             expect(comment).toHaveProperty("article_id");
+            expect(comment.article_id).toBe(1);
           })
         })
     })
-    test("200: Responds with empty array if no comments exist for given article_id", () => {
+    test("200: Responds with empty array if no comments exist for an article that exists", () => {
       return request(app)
         .get("/api/articles/4/comments")
         .expect(200)
@@ -386,12 +417,20 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(201)
         .then(({body: {comment}}) => {
           expect(comment).toHaveProperty("comment_id");
+          expect(typeof comment.comment_id).toBe("number");
           expect(comment.author).toBe(testComment.username);
+          expect(typeof comment.author).toBe("string");
           expect(comment.body).toBe(testComment.body);
+          expect(typeof comment.body).toBe("string");
           expect(comment.article_id).toBe(1);
+          expect(typeof comment.article_id).toBe("number");
+          expect(comment.votes).toBe(0);
+          expect(typeof comment.votes).toBe("number");
+          expect(comment).toHaveProperty("created_at");
+          expect(new Date(comment.created_at).toString()).not.toBe("Invalid Date");
         })
     })
-    test("404: Responds with article not found if article_id does not exist", () => {
+    test("404: Responds with resource not found if article_id does not exist", () => {
       const testComment = {
         username: "lurker",
         body: "it's ok."
@@ -402,10 +441,10 @@ describe("/api/articles/:article_id/comments", () => {
         .send(testComment)
         .expect(404)
         .then(({body}) => {
-          expect(body.msg).toBe("article not found");
+          expect(body.msg).toBe("resource not found");
         })
     })
-    test("404: Responds with user not found if username does not exist", () => {
+    test("404: Responds with resource not found if username does not exist", () => {
       const testComment = {
         username: "invalidUser",
         body: "hello world"
@@ -416,7 +455,7 @@ describe("/api/articles/:article_id/comments", () => {
         .send(testComment)
         .expect(404)
         .then(({body}) => {
-          expect(body.msg).toBe("user not found");
+          expect(body.msg).toBe("resource not found");
         })
     })
     test("400: Responds with username is missing from request if username is missing in the request", () => {

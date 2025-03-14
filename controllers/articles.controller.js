@@ -5,9 +5,7 @@ exports.getArticleById = (req, res, next) => {
     
     fetchArticleById(article_id).then((article) => {
         res.status(200).send({article});
-    }).catch((err) => {
-        next(err);
-    });
+    }).catch(next);
 }
 
 exports.getAllArticles = (req, res, next) => {
@@ -15,9 +13,7 @@ exports.getAllArticles = (req, res, next) => {
 
     fetchAllArticles(query).then((articles) => {
         res.status(200).send({articles});
-    }).catch((err) => {
-        next(err);
-    });
+    }).catch(next);
     }
 
 exports.patchArticle = (req, res, next) => {
@@ -26,7 +22,5 @@ exports.patchArticle = (req, res, next) => {
 
     updateArticle(article_id, inc_votes).then((article) => {
         res.status(200).send({article});
-    }).catch((err) => {
-        next(err);
-    })
+    }).catch(next);
 }
