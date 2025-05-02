@@ -76,6 +76,32 @@ describe("/api/users", () => {
   })
 })
 
+describe("/api/users/:username", () => {
+  describe("GET", () => {
+    test("200: Responds with user object with username, name, and avatar_url properties.", () => {
+      return request(app)
+        .get("/api/users/lurker")
+        .expect(200)
+        .then(({body: {user}}) => {
+          expect(user).toHaveProperty("username");
+          expect(user.username).toBe("lurker");
+          expect(user).toHaveProperty("name");
+          expect(user.name).toBe("do_nothing");
+          expect(user).toHaveProperty("avatar_url");
+          expect(user.avatar_url).toBe("https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png");
+        })
+    })
+    test("404: Responds with 'User not found' if invalid username is entered", () => {
+      return request(app)
+        .get("/api/users/grumpy18")
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("User not found");
+        })
+    })
+  })
+})
+
 describe("/api/articles", () => {
   describe("GET", () => {
     test("200 Responds with array of all articles with all properties of articles and a comment_count property", () => {
