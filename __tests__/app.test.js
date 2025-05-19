@@ -584,4 +584,76 @@ describe("/api/comments/:comment_id", () => {
         })
     })
   })
+  describe("PATCH", () => {
+    test("200: Increments votes by 1 and returns updated comment", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({inc_votes: 1})
+        .expect(200)
+        .then(({body: {comment}}) => {
+          expect(comment).toEqual({
+            comment_id: 1,
+            article_id: 9,
+            body: expect.any(String),
+            votes: 17,
+            author: "butter_bridge",
+            created_at: expect.any(String),
+          });
+          expect(comment.votes).not.toBe(16);
+        })
+    })
+    test("200: decrements votes by 1 and returns updated comment", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({inc_votes: -1})
+        .expect(200)
+        .then(({body: {comment}}) => {
+          expect(comment).toEqual({
+            comment_id: 1,
+            article_id: 9,
+            body: expect.any(String),
+            votes: 15,
+            author: "butter_bridge",
+            created_at: expect.any(String),
+          })
+          expect(comment.votes).not.toBe(16);
+        })
+    })
+    test("400: responds with 'Invalid inc_votes value' if inc_votes is not a number", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({inc_votes: "not-a-number"})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("Invalid inc_votes value");
+        })
+    })
+    test("400: responds with bad request for invalid comment_id", () => {
+      return request(app)
+        .patch("/api/comments/not-a-valid-id")
+        .send({inc_votes: 1})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("bad request");
+        })
+    })
+     test("404: responds with 'comment not found' for non-existent comment_id", () => {
+      return request(app)
+        .patch("/api/comments/999999")
+        .send({inc_votes: 1})
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("comment not found");
+        })
+     })
+     test("400: responds with bad request if inc_votes is missing from request", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({})
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("Invalid inc_votes value");
+        })
+     })
+  })
 })
