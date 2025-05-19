@@ -1,4 +1,4 @@
-const {fetchCommentsByArticleId, addComment, removeComment} = require("../models/comments.model");
+const {fetchCommentsByArticleId, addComment, removeComment, updateCommentVotesById} = require("../models/comments.model");
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const {article_id} = req.params;
@@ -22,5 +22,18 @@ exports.deleteComment = (req, res, next) => {
 
     removeComment(comment_id).then(() => {
         res.status(204).send();
+    }).catch(next);
+}
+
+exports.patchCommentById = (req, res, next) => {
+    const {comment_id} = req.params;
+    const {inc_votes} = req.body;
+
+    if (typeof inc_votes !== "number") {
+        return res.status(400).send({msg: "Invalid inc_votes value"});
+    }
+
+    updateCommentVotesById(comment_id, inc_votes).then((updatedComment) => {
+        res.status(200).send({comment: updatedComment});
     }).catch(next);
 }
