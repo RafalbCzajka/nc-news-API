@@ -226,6 +226,111 @@ describe("/api/articles", () => {
       })
     })
   })
+  describe("POST", () => {
+    test("201: Adds new article and returns it", async () => {
+      const newArticle = {
+        author: "lurker",
+        title: "My new article",
+        body: "This is the body of the test article.",
+        topic: "cats"
+      };
+
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
+        .then(({body: {article}}) => {
+          expect(article).toEqual(expect.objectContaining({
+            author: "lurker",
+            title: "My new article",
+            body: "This is the body of the test article.",
+            topic: "cats",
+            article_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            comment_count: 0,
+          }))
+        })
+    })
+    test("400: responds with an error when required fields are missing", async () => {
+      const incompleteArticle = {
+        author: "lurker",
+        title: "No body or topic"
+      };
+
+      return request(app)
+        .post("/api/articles")
+        .send(incompleteArticle)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("Missing required fields");
+        })
+    })
+    test("404: responds with an error for non-existent author", () => {
+      const invalidAuthorArticle = {
+        author: "non-existent-author",
+        title: "Invalid author",
+        body: "This is a test",
+        topic: "cats"
+      };
+
+      return request(app)
+        .post("/api/articles")
+        .send(invalidAuthorArticle)
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("resource not found");
+        })
+    })
+    test("404: responds with an error when topic does not exist", () => {
+      const invalidTopicArticle = {
+        author: "lurker",
+        title: "invalid topic",
+        body: "This is a test",
+        topic: "not-a-real-topic"
+      };
+
+      return request(app)
+        .post("/api/articles")
+        .send(invalidTopicArticle)
+        .expect(404)
+        .then(({body}) => {
+          expect(body.msg).toBe("resource not found");
+        })
+    })
+    test("400: Responds with bad request when fields have incorrect data type", () => {
+      const invalidArticle = {
+        author: 123,
+        title: 123,
+        body: 123,
+        topic: 123
+      }
+
+      return request(app)
+        .post("/api/articles")
+        .send(invalidArticle)
+        .expect(400)
+        .then(({body}) => {
+          expect(body.msg).toBe("Bad request");
+        })
+    })
+    test("201: Newly posted article should have a comment_count of 0", () => {
+      const newArticle = {
+        author: "icellusedkars",
+        title: "Test article",
+        body: "This article is a test",
+        topic: "paper"
+      };
+
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
+        .then(({body: {article}}) => {
+          expect(article.comment_count).toBe(0);
+        })
+    })
+  })
 })
 
 describe("/api/articles/:article_id", () => {

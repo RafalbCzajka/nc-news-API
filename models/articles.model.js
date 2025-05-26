@@ -100,3 +100,28 @@ exports.updateArticle = (id, votes) => {
         return rows[0];
     })
 }
+
+exports.insertArticle = async ({author, title, body, topic, article_img_url}) => {
+    if (!author || !title || !body || !topic) {
+        return Promise.reject({status: 400, msg: "Missing required fields"});
+    }
+
+    if (typeof author !== "string" || typeof title !== "string" || typeof body !== "string" || typeof topic !== "string") {
+        return Promise.reject({status: 400, msg: "Bad request"});
+    }
+
+    const defaultImgUrl = "https://wallpapers.com/images/hd/windows-default-background-ihuecjk2mhalw3nq.jpg";
+
+    const sqlString = `
+    INSERT INTO articles (author, title, body, topic, article_img_url)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING *;`
+
+    const result = await db.query(sqlString, [author, title, body, topic, article_img_url || defaultImgUrl]);
+
+    const article = result.rows[0];
+
+    const commentCountResult = await db.query(`SELECT COUNT(*)::int AS comment_count FROM comments WHERE article_id = $1;`, [article.article_id]);
+
+    return {...article, comment_count: commentCountResult.rows[0].comment_count};
+}
