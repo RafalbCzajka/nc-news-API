@@ -45,6 +45,29 @@
       ]
     }
   },
+  "POST /api/articles": {
+    "description": "Posts a new article. Accepts an object with author, title, body, topic, and optionally article_img_url. Returns newly created article.",
+    "exampleRequest": {
+      "author": "grumpy19",
+      "title": "Article Title",
+      "body": "Text from the article..",
+      "topic": "coding",
+      "article_img_url":"URL of image in the article.. (Optional)"
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": 38,
+        "author": "grumpy19",
+        "title":"Article Title",
+        "body":"Text from the article..",
+        "topic": "coding",
+        "article_img_url":"URL of image in the article..",
+        "votes": 0,
+        "created_at": "timestamp of when it was created",
+        "comment_count": 0
+      }
+    }
+  },
   "GET /api/articles/:article_id": {
     "description": "serves an object containing specified article",
     "queries": [],
