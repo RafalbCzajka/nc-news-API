@@ -125,3 +125,19 @@ exports.insertArticle = async ({author, title, body, topic, article_img_url}) =>
 
     return {...article, comment_count: commentCountResult.rows[0].comment_count};
 }
+
+exports.removeArticle = async (article_id) => {
+    if (isNaN(article_id)) {
+        return Promise.reject({status: 400, msg: "Invalid article_id"});
+    }
+
+    const sqlString = `DELETE FROM articles WHERE article_id = $1 RETURNING *;`
+
+    const result = await db.query(sqlString, [article_id]);
+
+    if (result.rows.length === 0) {
+        return Promise.reject({status: 404, msg: "Article not found"});
+    }
+
+    return result.rows[0];
+}
