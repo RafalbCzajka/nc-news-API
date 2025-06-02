@@ -102,6 +102,14 @@
       "article_img_url": "URL of image in the article.."
     }
   },
+ "DELETE /api/articles/:article_id": {
+  "description": "Deletes an article by ID along with its associated comments. Returns 204 No Content on success.",
+  "responses": {
+    "204": "Article successfully deleted.",
+    "400": "Invalid article ID format.",
+    "404": "Article not found."
+  }
+},
   "GET /api/articles/:article_id/comments": {
     "description": "serves an array of comments for specified article sorted by most recent",
     "queries": [],
