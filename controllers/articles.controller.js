@@ -9,10 +9,23 @@ exports.getArticleById = (req, res, next) => {
 }
 
 exports.getAllArticles = (req, res, next) => {
-    const query = req.query;
+    const query = {...req.query};
 
-    fetchAllArticles(query).then((articles) => {
-        res.status(200).send({articles});
+    const limit = query.limit !== undefined ? Number(query.limit) : 10;
+    const page = query.p !== undefined ? Number(query.p) : 1;
+
+    const isInvalidLimit = query.limit !== undefined && (!Number.isInteger(limit) || limit < 1);
+    const isInvalidPage = query.p !== undefined && (!Number.isInteger(page) || page < 1);
+
+    if (isInvalidLimit || isInvalidPage) {
+    return res.status(400).send({ msg: "invalid limit or page query" });
+  }
+
+    query.limit = limit;
+    query.page = page;
+
+    fetchAllArticles(query).then(({articles, total_count}) => {
+        res.status(200).send({articles, total_count});
     }).catch(next);
     }
 

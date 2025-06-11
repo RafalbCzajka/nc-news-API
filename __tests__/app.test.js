@@ -108,11 +108,13 @@ describe("/api/articles", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
-        .then(({body: {articles}}) => {
-          expect(Array.isArray(articles)).toBe(true);
-          expect(articles.length).toBe(13);
+        .then(({body}) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length).toBe(10);
+          expect(typeof body.total_count).toBe("number");
+          expect(body.total_count).toBe(13);
 
-          articles.forEach((article) => {
+          body.articles.forEach((article) => {
             expect(article).toHaveProperty("author");
             expect(typeof article.author).toBe("string");
             expect(article).toHaveProperty("title");
@@ -136,11 +138,12 @@ describe("/api/articles", () => {
       return request(app)
         .get("/api/articles?author=icellusedkars")
         .expect(200)
-        .then(({body: {articles}}) => {
-          expect(Array.isArray(articles)).toBe(true);
-          expect(articles.length).toBe(6);
+        .then(({body}) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.total_count).toBe(6);
+          expect(body.articles.length).toBe(6);
 
-          articles.forEach((article) => {
+          body.articles.forEach((article) => {
             expect(article.author).toBe("icellusedkars");
           })
         })
@@ -149,9 +152,10 @@ describe("/api/articles", () => {
       return request(app)
         .get("/api/articles?topic=mitch")
         .expect(200)
-        .then(({body: {articles}}) => {
+        .then(({body: {articles, total_count}}) => {
           expect(Array.isArray(articles)).toBe(true);
-          expect(articles.length).toBe(12);
+          expect(articles.length).toBe(10);
+          expect(total_count).toBe(12);
 
           articles.forEach((article) => {
             expect(article.topic).toBe("mitch");
@@ -225,6 +229,88 @@ describe("/api/articles", () => {
         expect(articles.length).toBe(0);
       })
     })
+    test("200 Responds with paginated articles - limit and page number", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=2")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length).toBeLessThanOrEqual(5);
+          expect(typeof body.total_count).toBe("number");
+        });
+    });
+    test("200 Responds with empty array if page number exceeds total pages", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=999")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length).toBe(0);
+        });
+    });
+    test("400 Responds with invalid query parameter if limit is not a number", () => {
+      return request(app)
+        .get("/api/articles?limit=notANumber")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("invalid limit or page query");
+        });
+    });
+
+    test("400 Responds with invalid query parameter if page is not a number", () => {
+      return request(app)
+        .get("/api/articles?p=notANumber")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("invalid limit or page query");
+        });
+    });
+
+    test("200 Responds with total_count that ignores limit/pagination", () => {
+      return request(app)
+        .get("/api/articles?limit=5")
+        .expect(200)
+        .then(({ body }) => {
+          expect(typeof body.total_count).toBe("number");
+          expect(body.total_count).toBeGreaterThan(body.articles.length);
+        });
+    });
+
+    test("200 Responds with filtered articles by topic and paginated", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch&limit=5&p=1")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          body.articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          });
+          expect(typeof body.total_count).toBe("number");
+        });
+    });
+
+    test("400 Responds with invalid query parameter: sort_by when invalid", () => {
+      return request(app)
+        .get("/api/articles?sort_by=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("invalid query parameter: sort_by");
+        });
+    });
+
+    test("200 Responds with sorted, filtered, and paginated articles", () => {
+      return request(app)
+        .get("/api/articles?author=icellusedkars&topic=mitch&sort_by=title&order=asc&limit=3&p=1")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length).toBeLessThanOrEqual(3);
+          body.articles.forEach((article) => {
+            expect(article.author).toBe("icellusedkars");
+            expect(article.topic).toBe("mitch");
+          });
+        });
+    });
   })
   describe("POST", () => {
     test("201: Adds new article and returns it", async () => {
