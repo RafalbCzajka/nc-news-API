@@ -2,8 +2,21 @@ const {fetchCommentsByArticleId, addComment, removeComment, updateCommentVotesBy
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const {article_id} = req.params;
+    const query = {...req.query};
 
-    fetchCommentsByArticleId(article_id).then((comments) => {
+    const limit = query.limit !== undefined ? Number(query.limit) : 10;
+    const page = query.p !== undefined ? Number(query.p) : 1;
+
+    const isInvalidLimit = query.limit !== undefined && (!Number.isInteger(limit) || limit < 1);
+    const isInvalidPage = query.p !== undefined && (!Number.isInteger(page) || page < 1);
+
+    if (isInvalidLimit || isInvalidPage) {
+        return res.status(400).send({msg: "Invalid limit or page query"});
+    }
+
+    const offset = (page - 1) * limit;
+
+    fetchCommentsByArticleId(article_id, limit, offset).then((comments) => {
         res.status(200).send({comments});
     }).catch(next);
 }

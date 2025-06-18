@@ -29,8 +29,14 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "description": "serves an array of articles with support for sorting, filtering by topic, and pagination",
+    "queries": {
+      "sort_by": "Sorts articles by column (e.g. created_at, title)",
+      "order": "asc or desc",
+      "topic": "Filters articles by topic",
+      "limit": "Number of comments per page (default: 10)",
+      "p": "Page number to srtart from (default: 1)"
+    },
     "exampleResponse": {
       "articles": [
         {
@@ -42,7 +48,8 @@
           "votes": 0,
           "comment_count": 6
         }
-      ]
+      ],
+    "total_count": "The total count of articles matching the filters"
     }
   },
   "POST /api/articles": {
@@ -111,8 +118,11 @@
   }
 },
   "GET /api/articles/:article_id/comments": {
-    "description": "serves an array of comments for specified article sorted by most recent",
-    "queries": [],
+    "description": "serves an array of comments for specified article sorted by most recent with pagination. Accepts 'limit'",
+    "queries": {
+      "limit": "Number of comments per page (default: 10)",
+      "p": "Page number to srtart from (default: 1)"
+    },
     "exampleResponse": {
       "comments": {
         "comment_id": 89,

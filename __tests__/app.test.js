@@ -616,13 +616,13 @@ describe("/api/articles/:article_id", () => {
 
 describe("/api/articles/:article_id/comments", () => {
   describe("GET", () => {
-    test("200: Responds with an array of comments for the given article_id sorted by most recent first", () => {
+    test("200: Responds with an array of 10 comments for the given article_id sorted by most recent first", () => {
       return request(app)
         .get("/api/articles/1/comments")
         .expect(200)
         .then(({body: {comments}}) => {
           expect(Array.isArray(comments)).toBe(true);
-          expect(comments.length).toBe(11);
+          expect(comments.length).toBe(10);
           expect(comments).toBeSortedBy("created_at", {descending: true});
 
           comments.forEach((comment) => {
@@ -659,6 +659,49 @@ describe("/api/articles/:article_id/comments", () => {
         .then(({body}) => {
           expect(body.msg).toBe("article_id not found");
         })
+    })
+    test("200: returns 5 comments when limit=5", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toHaveLength(5);
+      })
+     })
+    test("200: returns second page of 3 comments when limit=3&p=2", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=3&p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments[0].comment_id).toBe(13);
+        expect(body.comments[1].comment_id).toBe(7);
+        expect(body.comments[2].comment_id).toBe(8);
+      })
+    })
+    test("400: invalid limit query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=-5")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid limit or page query");
+      })
+    })
+    test("400: invalid page query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?p=abc")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid limit or page query");
+      })
+    })
+    test("200: returns empty array when page goes beyond available data", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=10&p=999")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual([]);
+      })
     })
   })
   describe("POST", () => {
